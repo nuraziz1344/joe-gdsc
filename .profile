@@ -1,1 +1,1 @@
-echo ${FIREBASE_CREDENTIALS_FILE} > /app/firebase-adminsdk-json
+echo ${FIREBASE_CREDENTIALS_FILE} > /app/firebase-adminsdk.json
