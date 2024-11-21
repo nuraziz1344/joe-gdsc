@@ -34,8 +34,6 @@ RUN composer install --optimize-autoloader --no-dev
 RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
 RUN php artisan l5-swagger:generate
 
-RUN echo ${FIREBASE_CREDENTIALS_FILE}
-
 # Expose the web server port
 EXPOSE 8000
 

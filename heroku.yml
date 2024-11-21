@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: /usr/local/bin/php artisan serve --host=0.0.0.0 --port=$PORT
+  web: echo ${FIREBASE_CREDENTIALS_FILE} > /app/firebase-adminsdk.json && /usr/local/bin/php artisan serve --host=0.0.0.0 --port=$PORT
