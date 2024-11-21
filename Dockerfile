@@ -41,8 +41,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
 RUN php artisan l5-swagger:generate
 
-# Expose a placeholder port for runtime
+# Add script to dynamically set PHP-FPM port
+RUN echo "env[PORT] = \$PORT" >> /usr/local/etc/php-fpm.d/www.conf
+RUN echo "listen = 0.0.0.0:\$PORT" >> /usr/local/etc/php-fpm.d/www.conf
+
+# Expose placeholder port (Heroku sets the actual port)
 EXPOSE 9000
 
-# Start PHP-FPM, dynamically binding to Heroku's PORT
-CMD ["sh", "-c", "php-fpm --nodaemonize --fpm-config /usr/local/etc/php-fpm.conf --port=${PORT:-9000}"]
+# Start PHP-FPM
+CMD ["php-fpm", "--nodaemonize"]
