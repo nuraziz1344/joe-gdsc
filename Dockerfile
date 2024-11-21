@@ -19,8 +19,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd sodium \
     && docker-php-ext-enable sodium
 
-# Disable all MPMs and enable only mpm_event explicitly
+# Disable all MPMs and make sure no MPM modules are loaded
 RUN a2dismod mpm_prefork mpm_worker mpm_event \
+    && rm /etc/apache2/mods-enabled/mpm_* \
     && a2enmod mpm_event
 
 # Install Composer
