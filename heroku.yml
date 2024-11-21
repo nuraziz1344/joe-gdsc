@@ -3,8 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: |
-    composer install --no-dev --optimize-autoloader
-    php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
-    php artisan l5-swagger:generate
-    php-fpm --nodaemonize
+  web: apache2-foreground

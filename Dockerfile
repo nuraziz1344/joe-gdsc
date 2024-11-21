@@ -1,29 +1,23 @@
-# Base image with PHP on Alpine Linux
-FROM php:8.2-fpm-alpine
+# Base image with PHP and Apache
+FROM php:8.2-apache
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install necessary system dependencies, including libsodium-dev
-RUN apk add --no-cache \
-    bash \
+# Install system dependencies, including libsodium
+RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
     libzip-dev \
-    libxml2-dev \
-    oniguruma-dev \
     unzip \
+    libpng-dev \
+    libonig-dev \
+    libmcrypt-dev \
+    libxml2-dev \
+    libsqlite3-dev \
     libsodium-dev \
-    && docker-php-ext-install \
-    pdo \
-    pdo_mysql \
-    mbstring \
-    zip \
-    exif \
-    bcmath \
-    gd \
-    sodium
+    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd sodium \
+    && docker-php-ext-enable sodium
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -31,26 +25,21 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . /var/www/html
 
-# Set permissions for storage and cache
+# Set correct permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Install PHP dependencies and optimize the autoloader
-RUN composer install --no-dev --optimize-autoloader
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
-# Publish Swagger configuration and generate Swagger docs
+# Install PHP dependencies
+RUN composer install --optimize-autoloader --no-dev
+
+# Publish Swagger configuration and generate documentation
 RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
 RUN php artisan l5-swagger:generate
 
-# Add script to dynamically set PHP-FPM port
-RUN echo "env[PORT] = \$PORT" >> /usr/local/etc/php-fpm.d/www.conf
-RUN echo "listen = 0.0.0.0:\$PORT" >> /usr/local/etc/php-fpm.d/www.conf
+# Expose the web server port
+EXPOSE 80
 
-# Expose a placeholder port (Heroku sets the actual port)
-EXPOSE 9000
-
-# Add a startup script to modify the PHP-FPM configuration dynamically
-COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
-# Use the custom entrypoint script
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Start the Apache server
+CMD ["apache2-foreground"]
