@@ -1,22 +1,29 @@
-# Base image with PHP and Apache
-FROM php:8.2-apache
+# Base image with PHP on Alpine Linux
+FROM php:8.2-fpm-alpine
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install necessary system dependencies, including libsodium-dev
+RUN apk add --no-cache \
+    bash \
     git \
     curl \
-    libzip-dev \
-    unzip \
     libpng-dev \
-    libonig-dev \
-    libmcrypt-dev \
+    libzip-dev \
     libxml2-dev \
-    libsqlite3-dev \
-    && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd sodium \
-    && docker-php-ext-enable sodium
+    oniguruma-dev \
+    unzip \
+    libsodium-dev \
+    && docker-php-ext-install \
+    pdo \
+    pdo_mysql \
+    mbstring \
+    zip \
+    exif \
+    bcmath \
+    gd \
+    sodium
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -24,21 +31,18 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Copy application files
 COPY . /var/www/html
 
-# Set correct permissions
+# Set permissions for storage and cache
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+# Install PHP dependencies and optimize the autoloader
+RUN composer install --no-dev --optimize-autoloader
 
-# Install PHP dependencies
-RUN composer install --optimize-autoloader --no-dev
-
-# Publish Swagger configuration and generate documentation
+# Publish Swagger configuration and generate Swagger docs
 RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
 RUN php artisan l5-swagger:generate
 
-# Expose the web server port
-EXPOSE 80
+# Expose the default PHP-FPM port
+EXPOSE 9000
 
-# Start the Apache server
-CMD ["apache2-foreground"]
+# Start PHP-FPM
+CMD ["php-fpm"]
