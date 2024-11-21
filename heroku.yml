@@ -7,4 +7,4 @@ run:
     composer install --no-dev --optimize-autoloader
     php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --force
     php artisan l5-swagger:generate
-    php-fpm
+    php-fpm --nodaemonize --fpm-config /usr/local/etc/php-fpm.conf --port=${PORT:-9000}
