@@ -45,8 +45,12 @@ RUN php artisan l5-swagger:generate
 RUN echo "env[PORT] = \$PORT" >> /usr/local/etc/php-fpm.d/www.conf
 RUN echo "listen = 0.0.0.0:\$PORT" >> /usr/local/etc/php-fpm.d/www.conf
 
-# Expose placeholder port (Heroku sets the actual port)
+# Expose a placeholder port (Heroku sets the actual port)
 EXPOSE 9000
 
-# Start PHP-FPM
-CMD ["php-fpm", "--nodaemonize"]
+# Add a startup script to modify the PHP-FPM configuration dynamically
+COPY ./docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Use the custom entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
