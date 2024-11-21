@@ -1,8 +1,8 @@
 # Base image with PHP and Apache
-FROM php:8.2-apache
+FROM php:8.3-alpine
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
 # Install system dependencies, including libsodium
 RUN apt-get update && apt-get install -y \
@@ -19,21 +19,11 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd sodium \
     && docker-php-ext-enable sodium
 
-# Disable all MPMs and enable mpm_prefork
-RUN a2dismod mpm_worker mpm_event \
-    && a2enmod mpm_prefork
-
-    # Install Composer
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Copy application files
-COPY . /var/www/html
-
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Enable Apache mod_rewrite
-RUN a2enmod rewrite
+COPY . /app
 
 # Install PHP dependencies
 RUN composer install --optimize-autoloader --no-dev
@@ -43,7 +33,7 @@ RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" -
 RUN php artisan l5-swagger:generate
 
 # Expose the web server port
-EXPOSE 80
+EXPOSE 8000
 
 # Start the Apache server with logs for debugging
-CMD apache2ctl -M && apache2-foreground
+CMD ["/usr/local/bin/php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]

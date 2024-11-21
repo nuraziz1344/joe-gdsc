@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: apache2ctl -M && apache2-foreground
+  web: /usr/local/bin/php artisan serve --host=0.0.0.0 --port=$PORT
