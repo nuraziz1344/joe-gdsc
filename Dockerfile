@@ -11,7 +11,7 @@ RUN apk update && apk add --no-cache \
     unzip \
     libpng-dev \
     libjpeg-turbo-dev \
-    libonig-dev \
+    oniguruma-dev \
     libmcrypt-dev \
     libxml2-dev \
     sqlite-dev \
