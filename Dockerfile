@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo pdo_mysql mbstring zip exif pcntl bcmath gd sodium \
     && docker-php-ext-enable sodium
 
-# Disable all MPMs explicitly and enable only mpm_event
+# Disable all MPMs and enable only mpm_event explicitly
 RUN a2dismod mpm_prefork mpm_worker mpm_event \
     && a2enmod mpm_event
 
@@ -45,5 +45,5 @@ RUN php artisan l5-swagger:generate
 # Expose the web server port
 EXPOSE 80
 
-# Start the Apache server
-CMD ["apache2-foreground"]
+# Start the Apache server with logs for debugging
+CMD apache2ctl -M && apache2-foreground

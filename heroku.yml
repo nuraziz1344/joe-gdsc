@@ -3,4 +3,4 @@ build:
     web: Dockerfile
 
 run:
-  web: apache2-foreground
+  web: apache2ctl -M && apache2-foreground
