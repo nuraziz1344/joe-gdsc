@@ -7,6 +7,22 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Kreait\Firebase\Contract\Database;
 
+/**
+ * @OA\Info(
+ *     version="1.0.0",
+ *     title="GDSC Test API",
+ *     description="API documentation for the GDSC Test collection"
+ * )
+ * @OA\Server(
+ *     url="https://joe-gdsc-8be20852b361.herokuapp.com/",
+ *     description="API Server"
+ * )
+ *   @OA\Tag(
+ *     name="Books",
+ *     description="API operations related to books"
+ * )
+ */
+
 class BookApiController extends Controller
 {
 
@@ -18,6 +34,43 @@ class BookApiController extends Controller
         $this->database = $database; // Inject Firebase Database instance
         $this->tablename = 'books'; // Firebase node name
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/books",
+     *     tags={"Books"},
+     *     summary="Create Book",
+     *     description="Creates a new book entry.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"title", "author", "published_at"},
+     *             @OA\Property(property="title", type="string", example="5 Minute to Learn Go"),
+     *             @OA\Property(property="author", type="string", example="Sundar Pichai"),
+     *             @OA\Property(property="published_at", type="string", format="date")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Book created successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="title", type="string", example="5 Minute to Learn Go"),
+     *                 @OA\Property(property="author", type="string", example="Sundar Pichai"),
+     *                 @OA\Property(property="published_at", type="string", format="date"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     )
+     * )
+     */
 
     public function store(Request $request)
     {
@@ -64,6 +117,35 @@ class BookApiController extends Controller
         ], 201);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/books",
+     *     tags={"Books"},
+     *     summary="Read Books",
+     *     description="Retrieves all book entries.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of books",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer"),
+     *                     @OA\Property(property="title", type="string"),
+     *                     @OA\Property(property="author", type="string"),
+     *                     @OA\Property(property="published_at", type="string", format="date"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
     public function index()
     {
         // Retrieve all records from the Firebase "books" node
@@ -92,6 +174,47 @@ class BookApiController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Put(
+     *     path="/api/books/{bookId}",
+     *     tags={"Books"},
+     *     summary="Update Book",
+     *     description="Updates the details of a specific book.",
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             type="object",
+     *             required={"title"},
+     *             @OA\Property(property="title", type="string", example="Updated Title")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Book updated successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="title", type="string", example="Updated Title"),
+     *                 @OA\Property(property="author", type="string"),
+     *                 @OA\Property(property="published_at", type="string", format="date"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time")
+     *             )
+     *         )
+     *     )
+     * )
+     */
+    
     public function update(Request $request, $id)
     {
         // Retrieve the specific book record by its ID
@@ -126,6 +249,29 @@ class BookApiController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Delete(
+     *     path="/api/books/{bookId}",
+     *     tags={"Books"},
+     *     summary="Delete Book",
+     *     description="Deletes a specific book.",
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Book deleted successfully",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string")
+     *         )
+     *     )
+     * )
+     */
+
     public function destroy($id)
     {
         // Reference the specific book in the Firebase database
@@ -143,6 +289,30 @@ class BookApiController extends Controller
         // Return success message
         return response()->json(["message" => "Book deleted successfully"], 200);
     }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/books/{bookId}",
+     *     tags={"Books"},
+     *     summary="Get Book",
+     *     description="Retrieves a specific book by ID.",
+     *     @OA\Parameter(
+     *         name="bookId",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Book not found",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Book not found")
+     *         )
+     *     )
+     * )
+     */
 
     public function show($id)
     {
